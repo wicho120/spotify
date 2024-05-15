@@ -1,43 +1,45 @@
 import { LitElement, html, css} from "lit";
 import 'boxicons'
 
-class getData extends LitElement{
-  
-}
-
-class getData extends LitElement{
-  constructor(){
-    super();
+class Mysearch extends LitElement{
+  static properties= {
+    track: {type: String}
   }
+  static styles = css`
+    .play_bar{
+      width: 100%;
+      height: 80vh;
+    }
 
-  static properties = {
-    nameSong: {tpe: String}
-  }
-
+    #search{
+      background-color: blue;
+      width: 100px
+      height:10px
+    }
+  `;
   render(){
     return html`
-        <input id="search" @change="${this.getNameSong}"></input>
-    `
+        <input id="search" @change="${this.getTrack}"></input>
+      ` 
   }
 
-  async getNameSong(e){
-    const config = {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': '3f4c660f71msh5286a7e33f1ba8fp1428c3jsnc1252ecd5a6d',
-        'X-RapidAPI-Host': 'spotify23.p.rapidapi.com'
-      }
-    };
-    let res = await fetch(`https://spotify23.p.rapidapi.com/search/?q=${e.target.value}&type=tracks&offset=0&limit=1`, config)
-    let data = await res.json();
+  async getTrack(e){
+    this.track = e.target.value;
+    const myImageInstance = new Myimage();
+    await myImageInstance.getTrack(this.track);
   }
-
-  
 }
+
+
 class Myimage extends LitElement{
+  static properties= {
+    urlSong: {type: String}
+  }
+
   constructor(){
     super();
   }
+
   static styles = css`
     *{
       padding: 0;
@@ -56,16 +58,48 @@ class Myimage extends LitElement{
     }
 
   `
+
+  updated(changedProperties) {
+    if (changedProperties.has('urlSong')) {
+      this.render(); // Vuelve a renderizar cuando la URL de la canción cambie
+    }
+  }
+  
+  async getTrack(nameSong){
+
+    const config = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': '3f4c660f71msh5286a7e33f1ba8fp1428c3jsnc1252ecd5a6d',
+        'X-RapidAPI-Host': 'spotify23.p.rapidapi.com'
+      }
+    };
+
+    let res = await fetch(`https://spotify23.p.rapidapi.com/search/?q=${this.nameSong}&type=tracks&offset=0&limit=1`, config)
+    let data = await res.json();
+    let { tracks: { items: [{ data: { albumOfTrack: { coverArt: { sources: [{ url }] } } }}]} } = data;
+
+    this.urlSong = url;
+    console.log(data)
+    console.log(nameSong)
+    this.render();
+    return this.nameSong;
+  }
+
   render(){
+    let srcSong = String(this.urlSong);
+    console.log(srcSong)
     return html`
     <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <div class="middleup__cont__img">
-      <img src="./src/storage/i.png">
+      <img src="${srcSong}">
     </div>
 
     `;
+    
   }
 }
+
 
 // .middleup__description{
 //   width: 100%;
@@ -192,4 +226,4 @@ class Myelementdown extends LitElement{
 }
 
 customElements.define("my-player-img", Myimage)
-customElements.define("my-element-down", Myelementdown)
+customElements.define("my-search", Mysearch)
